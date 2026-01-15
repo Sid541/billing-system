@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice Download</title>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- QR Code -->
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
+<style>
+  * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+  body { margin: 0; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; padding: 30px 0; }
+
+  .invoice-container {
+    background: #fff;
+    width: 900px;
+    border-radius: 12px;
+    padding: 30px 40px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  }
+
+  .header { display: flex; justify-content: space-between; background: #1f2c7c; color: white; padding: 20px 25px; border-radius: 12px 12px 0 0; }
+  .header h1 { margin: 0; font-size: 32px; }
+  .header-right { text-align: right; font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+  thead { background: #1f2c7c; color: white; }
+  th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; font-size: 14px; }
+
+  .totals { width: 40%; margin-left: auto; margin-top: 25px; }
+  .totals td { padding: 10px; font-size: 14px; }
+  .grand { background: #1f2c7c; color: white; font-weight: bold; }
+
+  .footer { display: flex; justify-content: space-between; margin-top: 40px; font-size: 14px; }
+  .footer h2 { margin: 0; color: #1f2c7c; }
+
+  .qr { margin-top: 30px; text-align: center; }
+  .qr p { margin-bottom: 10px; font-weight: bold; }
+
+  /* BUTTON */
+  .download-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    margin-top: 20px;
+    background: #1f2c7c;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .download-btn:hover { background: #3f51b5; }
+</style>
+</head>
+
+<body>
+
+<div class="invoice-container" id="invoice">
+
+  <div class="header">
+    <div>
+      <h1>INVOICE</h1>
+      <p>Touch & Touch Pvt Ltd</p>
+      <p>Invoice No: 1234</p>
+      <p id="date"></p>
+    </div>
+    <div class="header-right">
+      <p><strong>Invoice To:</strong></p>
+      <p>Steve Smith</p>
+      <p>hello@reallygreatsite.com</p>
+      <p>123 Anywhere St</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Qty</th>
+        <th>Cost</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody id="items"></tbody>
+  </table>
+
+  <div class="totals">
+    <table>
+      <tr><td>Subtotal</td><td id="subtotal"></td></tr>
+      <tr><td>Tax</td><td id="tax"></td></tr>
+      <tr class="grand"><td>Total</td><td id="total"></td></tr>
+    </table>
+  </div>
+
+  <div class="footer">
+    <div>
+      <p><strong>Payment Details</strong></p>
+      <p>Bank Code: 123-456-789</p>
+      <p>Bank Name: Fauget Bank</p>
+    </div>
+    <div>
+      <h2>Thank You!</h2>
+    </div>
+  </div>
+
+  <div class="qr">
+    <p>Scan QR to Pay</p>
+    <div id="qrcode"></div>
+  </div>
+
+</div>
+
+<!-- Download Button -->
+<button class="download-btn" onclick="downloadInvoice()">Download Invoice PDF</button>
+
+<script>
+  // Sample data
+  const products = [
+    { name: "Initial Consultation", qty: 5, price: 300 },
+    { name: "Project Draft", qty: 2, price: 500 },
+    { name: "Implementation", qty: 1, price: 12000 }
+  ];
+
+  const taxAmount = 250;
+  let subtotal = 0;
+
+  // Populate table
+  const tbody = document.getElementById("items");
+  products.forEach(p => {
+    const rowTotal = p.qty * p.price;
+    subtotal += rowTotal;
+    tbody.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.qty}</td>
+        <td>₹${p.price}</td>
+        <td>₹${rowTotal}</td>
+      </tr>
+    `;
+  });
+
+  // Totals
+  document.getElementById("subtotal").innerText = "₹" + subtotal;
+  document.getElementById("tax").innerText = "₹" + taxAmount;
+  document.getElementById("total").innerText = "₹" + (subtotal + taxAmount);
+
+  // Date
+  document.getElementById("date").innerText =
+    "Date: " + new Date().toLocaleDateString();
+
+  // QR Code
+  new QRCode(document.getElementById("qrcode"), {
+    text: "upi://pay?pa=test@upi&am=" + (subtotal + taxAmount),
+    width: 120,
+    height: 120
+  });
+
+  // Download PDF
+  async function downloadInvoice() {
+    const element = document.getElementById("invoice");
+    // Wait for html2canvas to render
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = 210;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("invoice.pdf");
+  }
+</script>
+
+</body>
+</html>

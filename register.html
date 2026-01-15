@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Account</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #1f2c7c, #3f51b5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Container */
+    .auth-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+
+    /* Card */
+    .auth-card {
+      background: white;
+      padding: 40px 35px;
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    /* Title */
+    .auth-card h2 {
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    /* Inputs */
+    .auth-card input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .auth-card input:focus {
+      border-color: #3f51b5;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(63,81,181,0.15);
+    }
+
+    /* Button */
+    .auth-card button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      background: #1f2c7c;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .auth-card button:hover {
+      background: #3f51b5;
+    }
+
+    /* Footer */
+    .switch {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .switch a {
+      color: #1f2c7c;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .switch a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Create Account</h2>
+    <p class="subtitle">Register to continue</p>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+
+    <p class="switch">
+      Already have an account?
+      <a href="login.html">Login</a>
+    </p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

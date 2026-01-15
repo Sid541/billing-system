@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generate Bill</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1f2c7c, #3f51b5);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 0;
+    }
+
+    .bill-container {
+      width: 100%;
+      max-width: 1000px;
+      background: white;
+      border-radius: 12px;
+      padding: 30px 40px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      text-align: center;
+      color: #1f2c7c;
+      margin-bottom: 25px;
+    }
+
+    /* Inputs */
+    .bill-container input {
+      width: 18%;
+      padding: 12px;
+      margin: 5px 1% 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .bill-container input:focus {
+      border-color: #3f51b5;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(63,81,181,0.15);
+    }
+
+    .bill-container button {
+      padding: 12px 25px;
+      margin-bottom: 20px;
+      border: none;
+      background: #1f2c7c;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .bill-container button:hover {
+      background: #3f51b5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    table thead {
+      background: #1f2c7c;
+      color: white;
+    }
+
+    h3 {
+      text-align: right;
+      color: #28a745;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="bill-container">
+  <h2>Bill Generation</h2>
+
+  <!-- Customer Name -->
+  <input type="text" id="customerName" placeholder="Customer Name">
+
+  <!-- Input Fields -->
+  <input type="text" id="product" placeholder="Product Name">
+  <input type="number" id="price" placeholder="Price">
+  <input type="number" id="qty" placeholder="Qty">
+  <input type="number" id="itemDiscount" placeholder="Discount %">
+  <input type="number" id="itemGst" placeholder="GST %">
+  <br>
+  <button onclick="addItem()">Add Item</button>
+
+  <!-- Bill Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Amount</th>
+        <th>Disc %</th>
+        <th>Disc Amt</th>
+        <th>GST %</th>
+        <th>GST Amt</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="items"></tbody>
+  </table>
+
+  <!-- Show Customer Name -->
+  <h3>Customer: <span id="displayCustomer">N/A</span></h3>
+  <h3>Grand Total: ₹<span id="total">0.00</span></h3>
+
+  <button onclick="goToPayment()">Proceed to Payment</button>
+</div>
+
+<script>
+  let grandTotal = 0;
+
+  function addItem() {
+    const customerName = document.getElementById("customerName").value || "N/A";
+    document.getElementById("displayCustomer").innerText = customerName;
+
+    const product = document.getElementById("product").value;
+    const price = parseFloat(document.getElementById("price").value) || 0;
+    const qty = parseInt(document.getElementById("qty").value) || 0;
+    const discount = parseFloat(document.getElementById("itemDiscount").value) || 0;
+    const gst = parseFloat(document.getElementById("itemGst").value) || 0;
+
+    const amount = price * qty;
+    const discountAmt = (amount * discount) / 100;
+    const gstAmt = ((amount - discountAmt) * gst) / 100;
+    const total = amount - discountAmt + gstAmt;
+
+    grandTotal += total;
+
+    const tbody = document.getElementById("items");
+    tbody.innerHTML += `
+      <tr>
+        <td>${product}</td>
+        <td>₹${price}</td>
+        <td>${qty}</td>
+        <td>₹${amount.toFixed(2)}</td>
+        <td>${discount}%</td>
+        <td>₹${discountAmt.toFixed(2)}</td>
+        <td>${gst}%</td>
+        <td>₹${gstAmt.toFixed(2)}</td>
+        <td>₹${total.toFixed(2)}</td>
+      </tr>
+    `;
+
+    document.getElementById("total").innerText = grandTotal.toFixed(2);
+
+    // Clear input fields
+    document.getElementById("product").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("qty").value = "";
+    document.getElementById("itemDiscount").value = "";
+    document.getElementById("itemGst").value = "";
+  }
+
+ function goToPayment() {
+    const customerName = document.getElementById("customerName").value || "N/A";
+
+    if (!customerName) {
+        alert("Please enter customer name before proceeding!");
+        return;
+    }
+
+    // Collect all items from the table
+    const items = [];
+    const rows = document.querySelectorAll("#items tr");
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        items.push({
+            product: cells[0].innerText,
+            price: cells[1].innerText,
+            qty: cells[2].innerText,
+            amount: cells[3].innerText,
+            discount: cells[4].innerText,
+            discountAmt: cells[5].innerText,
+            gst: cells[6].innerText,
+            gstAmt: cells[7].innerText,
+            total: cells[8].innerText
+        });
+    });
+
+    // Store data in localStorage
+    localStorage.setItem("customerName", customerName);
+    localStorage.setItem("items", JSON.stringify(items));
+    localStorage.setItem("grandTotal", grandTotal.toFixed(2));
+
+    // Redirect to invoice page
+    window.location.href = "invoice.html";  // Make sure this is your invoice page file
+}
+
+
+</script>
+
+</body>
+</html>
